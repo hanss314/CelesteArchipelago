@@ -14,6 +14,7 @@ namespace Celeste.Mod.CelesteArchipelago
     {
         public static ArchipelagoController Instance { get; private set; }
         public IProgressionSystem ProgressionSystem { get; set; }
+        public CelesteArchipelagoTrapManager trapManager { get; set; }
         public ArchipelagoSession Session
         {
             get
@@ -94,6 +95,7 @@ namespace Celeste.Mod.CelesteArchipelago
             ChatHandler = new ChatHandler(Game);
             game.Components.Add(ChatHandler);
             ProgressionSystem = new NullProgression();
+            trapManager = new CelesteArchipelagoTrapManager(SlotData.TrapDeathDuration, SlotData.TrapRoomDuration);
         }
 
         public void Init()
@@ -189,7 +191,7 @@ namespace Celeste.Mod.CelesteArchipelago
                 ArchipelagoNetworkItem item = new ArchipelagoNetworkItem(itemID);
 
                 // Collect received item via chosen progression system
-                ProgressionSystem.OnCollectedServer(item.areaKey, item.type, item.strawberry);
+                ProgressionSystem.OnCollectedServer(item.areaKey, item.type, GetEntityId(item));
                 receivedItemsHelper.DequeueItem();
             }
         }
@@ -220,7 +222,18 @@ namespace Celeste.Mod.CelesteArchipelago
             {
                 Logger.Log("CelesteArchipelago", $"Replaying location {Session.Locations.GetLocationNameFromId(loc) ?? loc.ToString()}");
                 item = new ArchipelagoNetworkItem(loc);
-                ProgressionSystem.OnCollectedClient(item.areaKey, item.type, item.strawberry, true);
+                ProgressionSystem.OnCollectedClient(item.areaKey, item.type, GetEntityId(item), true);
+            }
+        }
+
+        private EntityID? GetEntityId(ArchipelagoNetworkItem item) {
+            switch (item.type) {
+                case CollectableType.STRAWBERRY:
+                    return item.strawberry;
+                case CollectableType.TRAP:
+                    return item.trap;
+                default:
+                    return null;
             }
         }
 

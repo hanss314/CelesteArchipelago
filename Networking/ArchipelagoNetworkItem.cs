@@ -20,6 +20,7 @@ namespace Celeste.Mod.CelesteArchipelago
         public int mode;
         public int offset;
         public EntityID? strawberry;
+        public EntityID? trap;
 
         private static Dictionary<int, EntityID> StrawberryMap;
         private static Dictionary<string, int> StrawberryReverseMap;
@@ -59,6 +60,9 @@ namespace Celeste.Mod.CelesteArchipelago
             if (type == CollectableType.STRAWBERRY)
             {
                 strawberry = GetStrawberryEntityID(area, mode, offset);
+            }
+            else if (type == CollectableType.TRAP) {
+                trap = GetTrapEntityID(offset);
             }
         }
 
@@ -161,6 +165,27 @@ namespace Celeste.Mod.CelesteArchipelago
                 return StrawberryReverseMap[strawberry.Key];
             }
             return null;
+        }
+
+        private static EntityID GetTrapEntityID(int offset)
+        {
+            string level;
+            switch (offset) {
+                case (int)TrapTypes.THEO_CRYSTAL:
+                    level = "Theo Crystal";
+                    break;
+                case (int)TrapTypes.BADELINE_CHASERS:
+                    level = "Badeline Chasers";
+                    break;
+                case (int)TrapTypes.SEEKERS:
+                    level = "Seeker";
+                    break;
+                default: 
+                    throw new ArgumentOutOfRangeException($"Trap ({offset}) has not been implemented");
+            }
+
+            EntityID entityID = new EntityID(level, offset);
+            return entityID;
         }
     }
 }

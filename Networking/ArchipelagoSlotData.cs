@@ -16,6 +16,8 @@ namespace Celeste.Mod.CelesteArchipelago
         public long VictoryCondition { get; set; } = 0;
         public long ProgressionSystem { get; set; } = 0;
         public long DisableHeartGates { get; set; } = 0;
+        public long TrapDeathDuration { get; set; } = 10;
+        public long TrapRoomDuration { get; set; } = 3;
 
         private Dictionary<string, PropertyInfo> keyPropertyMap = new Dictionary<string, PropertyInfo>
         {
@@ -27,6 +29,8 @@ namespace Celeste.Mod.CelesteArchipelago
             { "progression_system", typeof(ArchipelagoSlotData).GetProperty("ProgressionSystem") },
             { "goal_level", typeof(ArchipelagoSlotData).GetProperty("VictoryCondition") },
             { "disable_heart_gates", typeof(ArchipelagoSlotData).GetProperty("DisableHeartGates") },
+            { "trap_death_duration", typeof(ArchipelagoSlotData).GetProperty("TrapDeathDuration") },
+            { "trap_room_duration", typeof(ArchipelagoSlotData).GetProperty("TrapRoomDuration") },
         };
 
         public ArchipelagoSlotData(Dictionary<string, object> slotData)
