@@ -18,11 +18,12 @@ namespace Celeste.Mod.CelesteArchipelago {
             Instance = this;
 #if DEBUG
             // debug builds use verbose logging
-            Logger.SetLogLevel(nameof(CelesteArchipelagoModule), LogLevel.Verbose);
+            Logger.SetLogLevel("CelesteArchipelago", LogLevel.Verbose);
 #else
             // release builds use info logging to reduce spam in log files
-            Logger.SetLogLevel(nameof(CelesteArchipelagoModule), LogLevel.Info);
+            Logger.SetLogLevel("CelesteArchipelago", LogLevel.Info);
 #endif
+
         }
 
         public override void Load() {

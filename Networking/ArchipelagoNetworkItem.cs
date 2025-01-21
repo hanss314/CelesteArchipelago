@@ -62,7 +62,7 @@ namespace Celeste.Mod.CelesteArchipelago
                 strawberry = GetStrawberryEntityID(area, mode, offset);
             }
             else if (type == CollectableType.TRAP) {
-                trap = GetTrapEntityID(offset);
+                trap = GetTrapEntityID((TrapType)offset);
             }
         }
 
@@ -167,24 +167,24 @@ namespace Celeste.Mod.CelesteArchipelago
             return null;
         }
 
-        private static EntityID GetTrapEntityID(int offset)
+        private static EntityID GetTrapEntityID(TrapType offset)
         {
             string level;
             switch (offset) {
-                case (int)TrapTypes.THEO_CRYSTAL:
+                case TrapType.THEO_CRYSTAL:
                     level = "Theo Crystal";
                     break;
-                case (int)TrapTypes.BADELINE_CHASERS:
+                case TrapType.BADELINE_CHASERS:
                     level = "Badeline Chasers";
                     break;
-                case (int)TrapTypes.SEEKERS:
+                case TrapType.SEEKERS:
                     level = "Seeker";
                     break;
                 default: 
                     throw new ArgumentOutOfRangeException($"Trap ({offset}) has not been implemented");
             }
 
-            EntityID entityID = new EntityID(level, offset);
+            EntityID entityID = new EntityID(level, (int)offset);
             return entityID;
         }
     }

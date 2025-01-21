@@ -19,8 +19,10 @@ namespace Celeste.Mod.CelesteArchipelago
         private static void OnTransitionTo(Level level, LevelData next, Vector2 direction)
         {
             var state = new PlayState(false, level.Session.Area, next.Name);
-            Logger.Log("CelesteArchipelago", $"Transitioning level. Setting PlayState to {state}");
             ArchipelagoController.Instance.PlayState = state;
+            ArchipelagoController.Instance.trapManager.AddRoomState(state);
+
+            Logger.Log("CelesteArchipelago", $"Transitioning level. Setting PlayState to {state}");
         }
 
         private static void OnExit(Level level, LevelExit exit, LevelExit.Mode mode, Session session, HiresSnow snow)

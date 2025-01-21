@@ -80,6 +80,7 @@ namespace Celeste.Mod.CelesteArchipelago
             new PatchedOuiChapterSelect(),
             new PatchedOuiMainMenu(),
             new PatchedOuiJournal(),
+            new PatchedPlayer(),
             new PatchedSaveData(),
             new PatchedStrawberry(),
             new PatchedBerryCounter(),
@@ -95,7 +96,7 @@ namespace Celeste.Mod.CelesteArchipelago
             ChatHandler = new ChatHandler(Game);
             game.Components.Add(ChatHandler);
             ProgressionSystem = new NullProgression();
-            trapManager = new CelesteArchipelagoTrapManager(SlotData.TrapDeathDuration, SlotData.TrapRoomDuration);
+            trapManager = new CelesteArchipelagoTrapManager();
         }
 
         public void Init()
@@ -153,6 +154,7 @@ namespace Celeste.Mod.CelesteArchipelago
                     {
                         ProgressionSystem = new DefaultProgression(SlotData);
                     }
+                    trapManager = new CelesteArchipelagoTrapManager(SlotData.TrapDeathDuration, SlotData.TrapRoomDuration);
                     Session.DataStorage[Scope.Slot, "CelestePlayState"].Initialize("1;0;0;dotutorial");
                     Session.DataStorage[Scope.Slot, "CelesteCheckpointState"].Initialize(long.MinValue);
 
@@ -161,6 +163,7 @@ namespace Celeste.Mod.CelesteArchipelago
                         Session.MessageLog.OnMessageReceived -= HandleMessage;
                         Session.Items.ItemReceived -= ReceiveItemCallback;
                         ProgressionSystem = new NullProgression();
+                        trapManager.ResetAllTraps();
                     };
                 }
                 else
