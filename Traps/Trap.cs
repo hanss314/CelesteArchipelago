@@ -1,26 +1,40 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using ExtendedVariants.Module;
 using ExtendedVariants.UI;
+using Newtonsoft.Json.Linq;
 
 namespace Celeste.Mod.CelesteArchipelago
 {
-    public abstract class Trap
+    public class Trap
     {
-        private long TrapDeathDurationMax = 10;
-        private long TrapRoomDurationMax  = 3;
-        public long DeathCount { get; protected set; } = 0;
-        public HashSet<PlayState> RoomStates { get; protected set; } = new();
+        private int TrapDeathDurationMax = 10;
+        private int TrapRoomDurationMax = 3;
+        public int DeathCount { get; protected set; } = 0;
+        public HashSet<string> RoomStates { get; protected set; } = new();
         public bool IsActive { get; set; } = false;
 
-        protected Trap(long deathDuration, long roomDuration)
+        protected Trap(int deathDuration, int roomDuration)
         {
             TrapDeathDurationMax = deathDuration;
             TrapRoomDurationMax = roomDuration;
         }
 
-        public abstract void SetTrap(object value); //IsActive gets set to true after the first time this gets successfully called
+        protected Trap(int deathDuration, int roomDuration, JToken trapValues)
+        {
+            // To your trap add all attributes that are recorded.
+            TrapDeathDurationMax = deathDuration;
+            TrapRoomDurationMax = roomDuration;
+            IsActive = (bool)trapValues["IsActive"];
+            DeathCount = (int)trapValues["DeathCount"];
+            RoomStates = trapValues["RoomStates"].ToObject<HashSet<string>>();
+        }
+
+        public virtual void SetTrap(object value, bool isExtending) //IsActive gets set to true after the first time this gets successfully called
+        {
+            throw new NotImplementedException("This method must be overridden in derived classes.");
+        }
+
         public virtual void ResetTrap()
         {
             // Always call before making reset
@@ -40,7 +54,7 @@ namespace Celeste.Mod.CelesteArchipelago
             }
         }
 
-        public void AddRoom(PlayState state)
+        public void AddRoom(string state)
         {
             RoomStates.Add(state);
 
@@ -55,19 +69,25 @@ namespace Celeste.Mod.CelesteArchipelago
 
     public class TheoCrystalTrap : Trap
     {
-        public TheoCrystalTrap(long deathDuration, long roomDuration) : base(deathDuration, roomDuration) { }
+        public TheoCrystalTrap(int deathDuration, int roomDuration) : base(deathDuration, roomDuration) { }
 
-        public override void SetTrap(object value)
+        public TheoCrystalTrap(int deathDuration, int roomDuration, JToken trapValues) : base(deathDuration, roomDuration, trapValues)
+        {
+            if (IsActive)
+            {
+                SetTrap(true, false);
+            }
+        }
+
+        public override void SetTrap(object value, bool isExtending)
         {
             if (value is bool boolValue)
             {
-                if (!IsActive)
+                ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.TheoCrystalsEverywhere, boolValue);
+                
+                if (isExtending)
                 {
-                    ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.TheoCrystalsEverywhere, boolValue);
-                }
-                else
-                {
-                    // "Extend" Trap and allow visits to previous rooms
+                    // Making the trap longer (or harder) as the trap has been collected twice in a short time frame
                     base.ResetTrap();
                 }
             }
@@ -80,30 +100,43 @@ namespace Celeste.Mod.CelesteArchipelago
         public override void ResetTrap()
         {
             base.ResetTrap();
-            ExtendedVariantsModule.Instance.ResetToDefaultSettings();
-            ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.BadelineChasersEverywhere, false);
+            
+            ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.TheoCrystalsEverywhere, false);
         }
     }
 
     public class BadelineChasersTrap : Trap
     {
         public int chaserCount { get; protected set; } = 1;
-        public BadelineChasersTrap(long deathDuration, long roomDuration) : base(deathDuration, roomDuration) { }
+        public BadelineChasersTrap(int deathDuration, int roomDuration) : base(deathDuration, roomDuration) { }
 
-        public override void SetTrap(object value)
+        public BadelineChasersTrap(int deathDuration, int roomDuration, JToken trapValues) : base(deathDuration, roomDuration, trapValues)
+        {
+            chaserCount = (int)trapValues["chaserCount"];
+
+            if (IsActive)
+            {
+                SetTrap(true, false);
+            }
+        }
+
+        public override void SetTrap(object value, bool isExtending)
         {
             if (value is bool boolValue)
             {
-                if (!IsActive)
+                ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.BadelineChasersEverywhere, boolValue);
+
+                if (isExtending)
                 {
-                    ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.BadelineChasersEverywhere, boolValue);
-                }
-                else
-                {
-                    chaserCount++;
+                    if (IsActive)
+                    {
+                        chaserCount++;
+                    }
+
                     ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.ChaserCount, chaserCount);
                     
-                    // "Extend" Trap and allow visits to previous rooms
+                    
+                    // Making the trap longer (or harder) as the trap has been collected twice in a short time frame
                     base.ResetTrap();
                 }
             }
@@ -116,25 +149,40 @@ namespace Celeste.Mod.CelesteArchipelago
         public override void ResetTrap()
         {
             base.ResetTrap();
-            ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.BadelineChasersEverywhere, false);
+            
             chaserCount = 1;
+            ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.BadelineChasersEverywhere, false);
+            ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.ChaserCount, chaserCount);
         }
     }
 
     public class SeekerTrap : Trap
     {
         public int seekerCount { get; protected set; } = 0;
-        public SeekerTrap(long deathDuration, long roomDuration) : base(deathDuration, roomDuration) { }
+        public SeekerTrap(int deathDuration, int roomDuration) : base(deathDuration, roomDuration) { }
 
-        public override void SetTrap(object value)
+        public SeekerTrap(int deathDuration, int roomDuration, JToken trapValues) : base(deathDuration, roomDuration, trapValues)
+        {
+            seekerCount = (int)trapValues["seekerCount"];
+
+            if (IsActive)
+            {
+                SetTrap(seekerCount, false);
+            }
+        }
+
+        public override void SetTrap(object value, bool isExtending)
         {
             if (value is int intValue)
             {
                 seekerCount = intValue;
                 ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.AddSeekers, intValue);
 
-                // "Extend" Trap and allow visits to previous rooms
-                base.ResetTrap();
+                if (isExtending)
+                {
+                    // Making the trap longer (or harder) as the trap has been collected twice in a short time frame
+                    base.ResetTrap();
+                }
             }
             else
             {
@@ -145,8 +193,9 @@ namespace Celeste.Mod.CelesteArchipelago
         public override void ResetTrap()
         {
             base.ResetTrap();
-            ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.AddSeekers, 0);
+
             seekerCount = 0;
+            ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.AddSeekers, seekerCount);
         }
     }
 }

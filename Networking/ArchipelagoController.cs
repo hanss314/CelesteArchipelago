@@ -4,9 +4,9 @@ using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Packets;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Celeste.Mod.CelesteArchipelago
 {
@@ -97,6 +97,7 @@ namespace Celeste.Mod.CelesteArchipelago
             game.Components.Add(ChatHandler);
             ProgressionSystem = new NullProgression();
             trapManager = new CelesteArchipelagoTrapManager();
+            trapManager.ResetAllTraps();
         }
 
         public void Init()
@@ -154,9 +155,27 @@ namespace Celeste.Mod.CelesteArchipelago
                     {
                         ProgressionSystem = new DefaultProgression(SlotData);
                     }
-                    trapManager = new CelesteArchipelagoTrapManager(SlotData.TrapDeathDuration, SlotData.TrapRoomDuration);
+
                     Session.DataStorage[Scope.Slot, "CelestePlayState"].Initialize("1;0;0;dotutorial");
                     Session.DataStorage[Scope.Slot, "CelesteCheckpointState"].Initialize(long.MinValue);
+                    Session.DataStorage[Scope.Slot, "CelesteTrapCount"].Initialize(0);
+                    Session.DataStorage[Scope.Slot, "CelesteTrapState"].Initialize(JObject.FromObject(new Dictionary<TrapType, Trap>()));
+
+                    JObject traps = Session.DataStorage[Scope.Slot, "CelesteTrapState"].To<JObject>();
+                    if (traps.Count == 0)
+                    {
+                        // Create new Traps
+                        trapManager = new CelesteArchipelagoTrapManager(SlotData.TrapDeathDuration, SlotData.TrapRoomDuration);
+                    }
+                    else
+                    {
+                        // Load previous traps
+                        int trapCounter = Session.DataStorage[Scope.Slot, "CelesteTrapCount"].To<int>();
+                        trapManager = new CelesteArchipelagoTrapManager(trapCounter, SlotData.TrapDeathDuration, SlotData.TrapRoomDuration, traps);
+                    }
+
+                    //trapManager.ResetAllTraps();
+
 
                     Connection.Disposed += (sender, args) =>
                     {

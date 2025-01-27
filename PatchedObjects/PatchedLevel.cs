@@ -20,7 +20,7 @@ namespace Celeste.Mod.CelesteArchipelago
         {
             var state = new PlayState(false, level.Session.Area, next.Name);
             ArchipelagoController.Instance.PlayState = state;
-            ArchipelagoController.Instance.trapManager.AddRoomState(state);
+            ArchipelagoController.Instance.trapManager.AddRoomToAllTraps(state.Room);
 
             Logger.Log("CelesteArchipelago", $"Transitioning level. Setting PlayState to {state}");
         }
