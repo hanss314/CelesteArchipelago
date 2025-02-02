@@ -151,7 +151,6 @@ namespace Celeste.Mod.CelesteArchipelago
 
         public int GetTotalVisually(CollectableType collectable)
         {
-            
             switch (collectable)
             {
                 case CollectableType.CASSETTE:

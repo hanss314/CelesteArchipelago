@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Archipelago.MultiClient.Net.Enums;
+using ExtendedVariants.Module;
 using Newtonsoft.Json.Linq;
 
 namespace Celeste.Mod.CelesteArchipelago
@@ -9,7 +10,7 @@ namespace Celeste.Mod.CelesteArchipelago
     {
         public Dictionary<TrapType, Trap> Traps = new();
         private int LocalTrapCounter = 0; // Unrelated to Traps
-        private int SavedTrapCounter = 0;
+        private int SavedTrapCounter = 0; // Unrelated to Traps
 
         public CelesteArchipelagoTrapManager() {}
 
@@ -18,7 +19,7 @@ namespace Celeste.Mod.CelesteArchipelago
             GenerateTraps(trapDeathDuration, trapRoomDuration);
         }
 
-        public CelesteArchipelagoTrapManager(int SavedTrapCounter, int trapDeathDuration, int trapRoomDuration, JObject Traps)
+        public CelesteArchipelagoTrapManager(int trapDeathDuration, int trapRoomDuration, int SavedTrapCounter, JObject Traps)
         {
             this.SavedTrapCounter = SavedTrapCounter;
             GenerateTraps(trapDeathDuration, trapRoomDuration, Traps);
@@ -81,6 +82,8 @@ namespace Celeste.Mod.CelesteArchipelago
             {
                 trap.ResetTrap();
             }
+
+            ExtendedVariantsModule.Instance.ResetToDefaultSettings();
         }
 
         public void IncrementAllDeathCounts()

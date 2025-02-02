@@ -14,7 +14,7 @@ namespace Celeste.Mod.CelesteArchipelago
     {
         public static ArchipelagoController Instance { get; private set; }
         public IProgressionSystem ProgressionSystem { get; set; }
-        public CelesteArchipelagoTrapManager trapManager { get; set; }
+        public CelesteArchipelagoTrapManager trapManager { get; private set; }
         public ArchipelagoSession Session
         {
             get
@@ -171,11 +171,8 @@ namespace Celeste.Mod.CelesteArchipelago
                     {
                         // Load previous traps
                         int trapCounter = Session.DataStorage[Scope.Slot, "CelesteTrapCount"].To<int>();
-                        trapManager = new CelesteArchipelagoTrapManager(trapCounter, SlotData.TrapDeathDuration, SlotData.TrapRoomDuration, traps);
+                        trapManager = new CelesteArchipelagoTrapManager(SlotData.TrapDeathDuration, SlotData.TrapRoomDuration, trapCounter, traps);
                     }
-
-                    //trapManager.ResetAllTraps();
-
 
                     Connection.Disposed += (sender, args) =>
                     {
@@ -275,6 +272,5 @@ namespace Celeste.Mod.CelesteArchipelago
             ChatHandler?.Dispose();
             base.Dispose(disposing);
         }
-
     }
 }

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using ExtendedVariants.Module;
-using ExtendedVariants.UI;
 using Newtonsoft.Json.Linq;
+using ExtendedVariants.Module;
+using static ExtendedVariants.Module.ExtendedVariantsModule;
 
 namespace Celeste.Mod.CelesteArchipelago
 {
@@ -16,13 +16,14 @@ namespace Celeste.Mod.CelesteArchipelago
 
         protected Trap(int deathDuration, int roomDuration)
         {
+            // No previous trap data has been made to all values should be default
             TrapDeathDurationMax = deathDuration;
             TrapRoomDurationMax = roomDuration;
         }
 
         protected Trap(int deathDuration, int roomDuration, JToken trapValues)
         {
-            // To your trap add all attributes that are recorded.
+            // To your trap add all attributes that are recorded from previous played sessions.
             TrapDeathDurationMax = deathDuration;
             TrapRoomDurationMax = roomDuration;
             IsActive = (bool)trapValues["IsActive"];
@@ -83,7 +84,7 @@ namespace Celeste.Mod.CelesteArchipelago
         {
             if (value is bool boolValue)
             {
-                ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.TheoCrystalsEverywhere, boolValue);
+                LuaCutscenesUtils.TriggerVariant(Variant.TheoCrystalsEverywhere.ToString(), boolValue, false);
                 
                 if (isExtending)
                 {
@@ -101,7 +102,7 @@ namespace Celeste.Mod.CelesteArchipelago
         {
             base.ResetTrap();
             
-            ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.TheoCrystalsEverywhere, false);
+            LuaCutscenesUtils.TriggerVariant(Variant.TheoCrystalsEverywhere.ToString(), false, false);
         }
     }
 
@@ -124,7 +125,7 @@ namespace Celeste.Mod.CelesteArchipelago
         {
             if (value is bool boolValue)
             {
-                ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.BadelineChasersEverywhere, boolValue);
+                LuaCutscenesUtils.TriggerVariant(Variant.BadelineChasersEverywhere.ToString(), boolValue, false);
 
                 if (isExtending)
                 {
@@ -133,7 +134,7 @@ namespace Celeste.Mod.CelesteArchipelago
                         chaserCount++;
                     }
 
-                    ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.ChaserCount, chaserCount);
+                    LuaCutscenesUtils.TriggerVariant(Variant.ChaserCount.ToString(), chaserCount, false);
                     
                     
                     // Making the trap longer (or harder) as the trap has been collected twice in a short time frame
@@ -151,8 +152,9 @@ namespace Celeste.Mod.CelesteArchipelago
             base.ResetTrap();
             
             chaserCount = 1;
-            ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.BadelineChasersEverywhere, false);
-            ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.ChaserCount, chaserCount);
+
+            LuaCutscenesUtils.TriggerVariant(Variant.BadelineChasersEverywhere.ToString(), false, false);
+            LuaCutscenesUtils.TriggerVariant(Variant.ChaserCount.ToString(), chaserCount, false);
         }
     }
 
@@ -176,7 +178,7 @@ namespace Celeste.Mod.CelesteArchipelago
             if (value is int intValue)
             {
                 seekerCount = intValue;
-                ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.AddSeekers, intValue);
+                LuaCutscenesUtils.TriggerVariant(Variant.AddSeekers.ToString(), seekerCount, false);
 
                 if (isExtending)
                 {
@@ -195,7 +197,7 @@ namespace Celeste.Mod.CelesteArchipelago
             base.ResetTrap();
 
             seekerCount = 0;
-            ModOptionsEntries.SetVariantValue(ExtendedVariantsModule.Variant.AddSeekers, seekerCount);
+            LuaCutscenesUtils.TriggerVariant(Variant.AddSeekers.ToString(), seekerCount, false);
         }
     }
 }
