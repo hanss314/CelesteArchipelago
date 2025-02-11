@@ -50,7 +50,7 @@ namespace Celeste.Mod.CelesteArchipelago
         protected override void ExtendTrap()
         {
             // Does not run on first call because IsActive is false initially
-            if (IsActive)
+            if (!IsActive)
             {
                 return;
             }
