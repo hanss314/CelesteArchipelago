@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Archipelago.MultiClient.Net.Enums;
-using ExtendedVariants.Module;
 using Newtonsoft.Json.Linq;
+using Archipelago.MultiClient.Net.Enums;
 
 namespace Celeste.Mod.CelesteArchipelago
 {
@@ -44,8 +43,6 @@ namespace Celeste.Mod.CelesteArchipelago
             Traps.Add(TrapType.BADELINE_CHASERS, new BadelineChasersTrap(trapDeathDuration, trapRoomDuration, traps[TrapType.BADELINE_CHASERS.ToString()]));
             Traps.Add(TrapType.SEEKER, new SeekerTrap(trapDeathDuration, trapRoomDuration, traps[TrapType.SEEKER.ToString()]));
             Traps.Add(TrapType.STAMINA, new StaminaTrap(trapDeathDuration, trapRoomDuration, traps[TrapType.STAMINA.ToString()]));
-
-            LoadStatus = TrapLoadStatus.PENDING;
         }
 
         public void LoadTraps()
@@ -67,6 +64,7 @@ namespace Celeste.Mod.CelesteArchipelago
 
         public void AddTrap(TrapType trapID)
         {
+            Logger.Log(LogLevel.Debug, "CelesteArchipelago", $"LocalTrapCounter: {LocalTrapCounter}, SavedTrapCounter: {SavedTrapCounter}");
             // Upon loading previous save prevents traps from re-loading on screen
             if (LocalTrapCounter < SavedTrapCounter)
             {
@@ -89,7 +87,8 @@ namespace Celeste.Mod.CelesteArchipelago
 
                     break;
                 case TrapType.STAMINA:
-                    Traps[trapID].SetTrap(30, true);
+                    StaminaTrap staminaTrap = (StaminaTrap)Traps[trapID];
+                    Traps[trapID].SetTrap(staminaTrap.StaminaCount, true);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException($"Trap Type {trapID} has not been implemented");
@@ -108,8 +107,6 @@ namespace Celeste.Mod.CelesteArchipelago
             {
                 trap.ResetTrap();
             }
-
-            ExtendedVariantsModule.Instance.ResetToDefaultSettings();
         }
 
         public void IncrementAllDeathCounts()

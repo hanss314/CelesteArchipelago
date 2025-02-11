@@ -1,4 +1,6 @@
 ﻿using System;
+using CelesteArchipelago;
+using MonoMod.ModInterop;
 
 namespace Celeste.Mod.CelesteArchipelago {
     public class CelesteArchipelagoModule : EverestModule {
@@ -27,6 +29,8 @@ namespace Celeste.Mod.CelesteArchipelago {
         }
 
         public override void Load() {
+            typeof(ExtendedVariantInterop).ModInterop();
+            
             new ArchipelagoController(Celeste.Instance);
             ArchipelagoController.Instance.LoadPatches();
 

@@ -54,10 +54,6 @@
         <Reference Include="$(CelestePrefix)\MMHOOK_Celeste.dll">
             <Private>false</Private>
         </Reference>
-        <Reference Include="ExtendedVariantMode">
-            <HintPath>lib-stripped\ExtendedVariantMode.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
     </ItemGroup>
 
     <Choose>
