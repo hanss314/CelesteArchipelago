@@ -177,8 +177,11 @@ namespace Celeste.Mod.CelesteArchipelago
                 case TrapType.BADELINE_CHASERS:
                     level = "Badeline Chasers";
                     break;
-                case TrapType.SEEKERS:
+                case TrapType.SEEKER:
                     level = "Seeker";
+                    break;
+                case TrapType.STAMINA:
+                    level = "Stamina";
                     break;
                 default: 
                     throw new ArgumentOutOfRangeException($"Trap ({offset}) has not been implemented");

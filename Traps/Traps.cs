@@ -64,7 +64,6 @@ namespace Celeste.Mod.CelesteArchipelago
             DeathCount++;
 
             // Disable trap when DeathCount reaches TrapDeathDurationMax
-            Logger.Log(LogLevel.Debug, "CelesteArchipelago", $"DeathCount: {DeathCount}, MacDeath: {TrapDeathDurationMax}, for {this}");
             if (DeathCount >= TrapDeathDurationMax)
             {
                 ResetTrap();
@@ -76,7 +75,6 @@ namespace Celeste.Mod.CelesteArchipelago
             RoomStates.Add(state);
 
             // Disabling trap upon rooms travelled is bigger than roomMax value (as to not include room trap spawned in)
-            Logger.Log(LogLevel.Debug, "CelesteArchipelago", $"RoomStates: {RoomStates.Count} MaxRoom: {TrapRoomDurationMax}, for {this}");
             if (RoomStates.Count > TrapRoomDurationMax)
             {
                 ResetTrap();
@@ -104,19 +102,17 @@ namespace Celeste.Mod.CelesteArchipelago
 
         public override void SetTrap(object value, bool isExtending)
         {
-            if (value is bool boolValue)
-            {
-                if (isExtending)
-                {
-                    base.ExtendTrap();
-                }
-
-                LuaCutscenesUtils.TriggerVariant(Variant.TheoCrystalsEverywhere.ToString(), boolValue, false);
-            }
-            else
+            if (value is not bool)
             {
                 throw new ArgumentException($"{value.GetType()} is an invalid value type for TheoCrystalTrap. Expected bool.");
             }
+
+            if (isExtending)
+            {
+                base.ExtendTrap();
+            }
+
+            LuaCutscenesUtils.TriggerVariant(Variant.TheoCrystalsEverywhere.ToString(), (bool)value, false);
         }
 
         public override void ResetTrap()
@@ -147,19 +143,17 @@ namespace Celeste.Mod.CelesteArchipelago
 
         public override void SetTrap(object value, bool isExtending)
         {
-            if (value is bool boolValue)
-            {
-                if (isExtending)
-                {
-                    ExtendTrap();
-                }
-
-                LuaCutscenesUtils.TriggerVariant(Variant.BadelineChasersEverywhere.ToString(), boolValue, false);
-            }
-            else
+            if (value is not bool)
             {
                 throw new ArgumentException($"{value.GetType()} is an invalid value type for BadelineChasersTrap. Expected bool.");
             }
+
+            if (isExtending)
+            {
+                ExtendTrap();
+            }
+
+            LuaCutscenesUtils.TriggerVariant(Variant.BadelineChasersEverywhere.ToString(), (bool)value, false);
         }
 
         public override void ResetTrap()
@@ -180,6 +174,8 @@ namespace Celeste.Mod.CelesteArchipelago
             {
                 ChaserCount++;
             }
+
+            LuaCutscenesUtils.TriggerVariant(Variant.ChaserCount.ToString(), ChaserCount, false);
         }
     }
 
@@ -203,21 +199,19 @@ namespace Celeste.Mod.CelesteArchipelago
 
         public override void SetTrap(object value, bool isExtending)
         {
-            if (value is int intValue)
-            {
-                SeekerCount = intValue;
-
-                if (isExtending)
-                {
-                    ExtendTrap();
-                }
-
-                LuaCutscenesUtils.TriggerVariant(Variant.AddSeekers.ToString(), SeekerCount, false);
-            }
-            else
+            if (value is not int)
             {
                 throw new ArgumentException($"{value.GetType()} is an invalid value type for SeekerTrap. Expected int.");
             }
+
+            SeekerCount = (int)value;
+
+            if (isExtending)
+            {
+                ExtendTrap();
+            }
+
+            LuaCutscenesUtils.TriggerVariant(Variant.AddSeekers.ToString(), SeekerCount, false);
         }
 
         public override void ResetTrap()
@@ -232,6 +226,56 @@ namespace Celeste.Mod.CelesteArchipelago
         {
             base.ExtendTrap();
             SeekerCount++;
+        }
+    }
+
+    public class StaminaTrap : Trap
+    {
+        public int StaminaCount { get; protected set; } = 110;
+        public StaminaTrap(long deathDuration, long roomDuration) : base(deathDuration, roomDuration) { }
+
+        public StaminaTrap(long deathDuration, long roomDuration, JToken trapValues) : base(deathDuration, roomDuration, trapValues)
+        {
+            StaminaCount = (int)trapValues["StaminaCount"];
+        }
+
+        public override void LoadTrap()
+        {
+            if (IsActive)
+            {
+                SetTrap(StaminaCount, false);
+            }
+        }
+
+        public override void SetTrap(object value, bool isExtending)
+        {
+            if (value is not int)
+            {
+                throw new ArgumentException($"{value.GetType()} is an invalid value type for StaminaTrap. Expected int.");
+            }
+
+            StaminaCount = (int)value;
+
+            if (isExtending)
+            {
+                base.ExtendTrap();
+            }
+
+            LuaCutscenesUtils.TriggerVariant(Variant.Stamina.ToString(), StaminaCount, false);
+        }
+
+        public override void ResetTrap()
+        {
+            base.ResetTrap();
+            StaminaCount = 110;
+            
+            LuaCutscenesUtils.TriggerVariant(Variant.Stamina.ToString(), StaminaCount, false);
+        }
+
+        protected override void ExtendTrap()
+        {
+            base.ExtendTrap();
+            StaminaCount -= 15;
         }
     }
 }

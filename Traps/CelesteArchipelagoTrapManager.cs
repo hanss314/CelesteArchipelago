@@ -33,7 +33,8 @@ namespace Celeste.Mod.CelesteArchipelago
             // Create new trap
             Traps.Add(TrapType.THEO_CRYSTAL, new TheoCrystalTrap(trapDeathDuration, trapRoomDuration));
             Traps.Add(TrapType.BADELINE_CHASERS, new BadelineChasersTrap(trapDeathDuration, trapRoomDuration));
-            Traps.Add(TrapType.SEEKERS, new SeekerTrap(trapDeathDuration, trapRoomDuration));
+            Traps.Add(TrapType.SEEKER, new SeekerTrap(trapDeathDuration, trapRoomDuration));
+            Traps.Add(TrapType.STAMINA, new StaminaTrap(trapDeathDuration, trapRoomDuration));
         }
 
         private void GenerateTraps(long trapDeathDuration, long trapRoomDuration, JObject traps)
@@ -41,7 +42,9 @@ namespace Celeste.Mod.CelesteArchipelago
             // Create trap based off previous data
             Traps.Add(TrapType.THEO_CRYSTAL, new TheoCrystalTrap(trapDeathDuration, trapRoomDuration, traps[TrapType.THEO_CRYSTAL.ToString()]));
             Traps.Add(TrapType.BADELINE_CHASERS, new BadelineChasersTrap(trapDeathDuration, trapRoomDuration, traps[TrapType.BADELINE_CHASERS.ToString()]));
-            Traps.Add(TrapType.SEEKERS, new SeekerTrap(trapDeathDuration, trapRoomDuration, traps[TrapType.SEEKERS.ToString()]));
+            Traps.Add(TrapType.SEEKER, new SeekerTrap(trapDeathDuration, trapRoomDuration, traps[TrapType.SEEKER.ToString()]));
+            Traps.Add(TrapType.STAMINA, new StaminaTrap(trapDeathDuration, trapRoomDuration, traps[TrapType.STAMINA.ToString()]));
+
             LoadStatus = TrapLoadStatus.PENDING;
         }
 
@@ -80,10 +83,13 @@ namespace Celeste.Mod.CelesteArchipelago
                 case TrapType.BADELINE_CHASERS:
                     Traps[trapID].SetTrap(true, true);
                     break;
-                case TrapType.SEEKERS:
+                case TrapType.SEEKER:
                     SeekerTrap seekerTrap = (SeekerTrap)Traps[trapID];
                     seekerTrap.SetTrap(seekerTrap.SeekerCount, true);
 
+                    break;
+                case TrapType.STAMINA:
+                    Traps[trapID].SetTrap(30, true);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException($"Trap Type {trapID} has not been implemented");
