@@ -8,22 +8,23 @@ namespace Celeste.Mod.CelesteArchipelago
 {
     public class Trap
     {
-        private int TrapDeathDurationMax = 10;
-        private int TrapRoomDurationMax = 3;
+        // All public get values will be saved in the datastorage.
+        private long TrapDeathDurationMax = 10;
+        private long TrapRoomDurationMax = 3;
         public int DeathCount { get; protected set; } = 0;
         public HashSet<string> RoomStates { get; protected set; } = new();
         public bool IsActive { get; set; } = false;
 
-        protected Trap(int deathDuration, int roomDuration)
+        protected Trap(long deathDuration, long roomDuration)
         {
-            // No previous trap data has been made to all values should be default
+            // No previous trap data exists, so all values should be default
             TrapDeathDurationMax = deathDuration;
             TrapRoomDurationMax = roomDuration;
         }
 
-        protected Trap(int deathDuration, int roomDuration, JToken trapValues)
+        protected Trap(long deathDuration, long roomDuration, JToken trapValues)
         {
-            // To your trap add all attributes that are recorded from previous played sessions.
+            // Add all attributes that are recorded from previously played sessions to your trap.
             TrapDeathDurationMax = deathDuration;
             TrapRoomDurationMax = roomDuration;
             IsActive = (bool)trapValues["IsActive"];
@@ -31,15 +32,29 @@ namespace Celeste.Mod.CelesteArchipelago
             RoomStates = trapValues["RoomStates"].ToObject<HashSet<string>>();
         }
 
-        public virtual void SetTrap(object value, bool isExtending) //IsActive gets set to true after the first time this gets successfully called
+        public virtual void LoadTrap()
         {
+            // Load trap data from previous session
+            throw new NotImplementedException("This method must be overridden in derived classes.");
+        }
+
+        public virtual void SetTrap(object value, bool isExtending)
+        {
+            // IsActive is set to true after the first successful call to this method
             throw new NotImplementedException("This method must be overridden in derived classes.");
         }
 
         public virtual void ResetTrap()
         {
-            // Always call before making reset
+            // Always call this method before resetting the trap
             IsActive = false;
+            DeathCount = 0;
+            RoomStates = new();
+        }
+
+        protected virtual void ExtendTrap()
+        {
+            // Making a trap longer and/or harder based on getting sent multiple of this trap
             DeathCount = 0;
             RoomStates = new();
         }
@@ -48,19 +63,21 @@ namespace Celeste.Mod.CelesteArchipelago
         {
             DeathCount++;
 
-            // Disabling trap upon deathMax value
+            // Disable trap when DeathCount reaches TrapDeathDurationMax
+            Logger.Log(LogLevel.Debug, "CelesteArchipelago", $"DeathCount: {DeathCount}, MacDeath: {TrapDeathDurationMax}, for {this}");
             if (DeathCount >= TrapDeathDurationMax)
             {
                 ResetTrap();
             }
         }
 
-        public void AddRoom(string state)
+        public void IncrementRoomCount(string state)
         {
             RoomStates.Add(state);
 
-            // Disabling trap upon roomMax value, + 1 exists so that current spawning room does not count
-            if (RoomStates.Count >= TrapRoomDurationMax + 1)
+            // Disabling trap upon rooms travelled is bigger than roomMax value (as to not include room trap spawned in)
+            Logger.Log(LogLevel.Debug, "CelesteArchipelago", $"RoomStates: {RoomStates.Count} MaxRoom: {TrapRoomDurationMax}, for {this}");
+            if (RoomStates.Count > TrapRoomDurationMax)
             {
                 ResetTrap();
             }
@@ -70,9 +87,14 @@ namespace Celeste.Mod.CelesteArchipelago
 
     public class TheoCrystalTrap : Trap
     {
-        public TheoCrystalTrap(int deathDuration, int roomDuration) : base(deathDuration, roomDuration) { }
+        public TheoCrystalTrap(long deathDuration, long roomDuration) : base(deathDuration, roomDuration) { }
 
-        public TheoCrystalTrap(int deathDuration, int roomDuration, JToken trapValues) : base(deathDuration, roomDuration, trapValues)
+        public TheoCrystalTrap(long deathDuration, long roomDuration, JToken trapValues) : base(deathDuration, roomDuration, trapValues)
+        {
+            
+        }
+
+        public override void LoadTrap()
         {
             if (IsActive)
             {
@@ -84,13 +106,12 @@ namespace Celeste.Mod.CelesteArchipelago
         {
             if (value is bool boolValue)
             {
-                LuaCutscenesUtils.TriggerVariant(Variant.TheoCrystalsEverywhere.ToString(), boolValue, false);
-                
                 if (isExtending)
                 {
-                    // Making the trap longer (or harder) as the trap has been collected twice in a short time frame
-                    base.ResetTrap();
+                    base.ExtendTrap();
                 }
+
+                LuaCutscenesUtils.TriggerVariant(Variant.TheoCrystalsEverywhere.ToString(), boolValue, false);
             }
             else
             {
@@ -108,13 +129,16 @@ namespace Celeste.Mod.CelesteArchipelago
 
     public class BadelineChasersTrap : Trap
     {
-        public int chaserCount { get; protected set; } = 1;
-        public BadelineChasersTrap(int deathDuration, int roomDuration) : base(deathDuration, roomDuration) { }
+        public int ChaserCount { get; protected set; } = 1;
+        public BadelineChasersTrap(long deathDuration, long roomDuration) : base(deathDuration, roomDuration) { }
 
-        public BadelineChasersTrap(int deathDuration, int roomDuration, JToken trapValues) : base(deathDuration, roomDuration, trapValues)
+        public BadelineChasersTrap(long deathDuration, long roomDuration, JToken trapValues) : base(deathDuration, roomDuration, trapValues)
         {
-            chaserCount = (int)trapValues["chaserCount"];
+            ChaserCount = (int)trapValues["ChaserCount"];
+        }
 
+        public override void LoadTrap()
+        {
             if (IsActive)
             {
                 SetTrap(true, false);
@@ -125,21 +149,12 @@ namespace Celeste.Mod.CelesteArchipelago
         {
             if (value is bool boolValue)
             {
-                LuaCutscenesUtils.TriggerVariant(Variant.BadelineChasersEverywhere.ToString(), boolValue, false);
-
                 if (isExtending)
                 {
-                    if (IsActive)
-                    {
-                        chaserCount++;
-                    }
-
-                    LuaCutscenesUtils.TriggerVariant(Variant.ChaserCount.ToString(), chaserCount, false);
-                    
-                    
-                    // Making the trap longer (or harder) as the trap has been collected twice in a short time frame
-                    base.ResetTrap();
+                    ExtendTrap();
                 }
+
+                LuaCutscenesUtils.TriggerVariant(Variant.BadelineChasersEverywhere.ToString(), boolValue, false);
             }
             else
             {
@@ -151,25 +166,38 @@ namespace Celeste.Mod.CelesteArchipelago
         {
             base.ResetTrap();
             
-            chaserCount = 1;
+            ChaserCount = 1;
 
             LuaCutscenesUtils.TriggerVariant(Variant.BadelineChasersEverywhere.ToString(), false, false);
-            LuaCutscenesUtils.TriggerVariant(Variant.ChaserCount.ToString(), chaserCount, false);
+            LuaCutscenesUtils.TriggerVariant(Variant.ChaserCount.ToString(), ChaserCount, false);
+        }
+
+        protected override void ExtendTrap()
+        {
+            base.ExtendTrap();
+
+            if (IsActive)
+            {
+                ChaserCount++;
+            }
         }
     }
 
     public class SeekerTrap : Trap
     {
-        public int seekerCount { get; protected set; } = 0;
-        public SeekerTrap(int deathDuration, int roomDuration) : base(deathDuration, roomDuration) { }
+        public int SeekerCount { get; protected set; } = 0;
+        public SeekerTrap(long deathDuration, long roomDuration) : base(deathDuration, roomDuration) { }
 
-        public SeekerTrap(int deathDuration, int roomDuration, JToken trapValues) : base(deathDuration, roomDuration, trapValues)
+        public SeekerTrap(long deathDuration, long roomDuration, JToken trapValues) : base(deathDuration, roomDuration, trapValues)
         {
-            seekerCount = (int)trapValues["seekerCount"];
+            SeekerCount = (int)trapValues["SeekerCount"];
+        }
 
+        public override void LoadTrap()
+        {
             if (IsActive)
             {
-                SetTrap(seekerCount, false);
+                SetTrap(SeekerCount, false);
             }
         }
 
@@ -177,14 +205,14 @@ namespace Celeste.Mod.CelesteArchipelago
         {
             if (value is int intValue)
             {
-                seekerCount = intValue;
-                LuaCutscenesUtils.TriggerVariant(Variant.AddSeekers.ToString(), seekerCount, false);
+                SeekerCount = intValue;
 
                 if (isExtending)
                 {
-                    // Making the trap longer (or harder) as the trap has been collected twice in a short time frame
-                    base.ResetTrap();
+                    ExtendTrap();
                 }
+
+                LuaCutscenesUtils.TriggerVariant(Variant.AddSeekers.ToString(), SeekerCount, false);
             }
             else
             {
@@ -196,8 +224,14 @@ namespace Celeste.Mod.CelesteArchipelago
         {
             base.ResetTrap();
 
-            seekerCount = 0;
-            LuaCutscenesUtils.TriggerVariant(Variant.AddSeekers.ToString(), seekerCount, false);
+            SeekerCount = 0;
+            LuaCutscenesUtils.TriggerVariant(Variant.AddSeekers.ToString(), SeekerCount, false);
+        }
+
+        protected override void ExtendTrap()
+        {
+            base.ExtendTrap();
+            SeekerCount++;
         }
     }
 }

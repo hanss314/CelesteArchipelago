@@ -97,7 +97,6 @@ namespace Celeste.Mod.CelesteArchipelago
             game.Components.Add(ChatHandler);
             ProgressionSystem = new NullProgression();
             trapManager = new CelesteArchipelagoTrapManager();
-            trapManager.ResetAllTraps();
         }
 
         public void Init()

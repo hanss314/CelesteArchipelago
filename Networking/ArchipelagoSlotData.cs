@@ -12,8 +12,8 @@ namespace Celeste.Mod.CelesteArchipelago
         public long VictoryCondition { get; set; } = 0;
         public long ProgressionSystem { get; set; } = 0;
         public long DisableHeartGates { get; set; } = 0;
-        public int TrapDeathDuration { get; set; } = 10;
-        public int TrapRoomDuration { get; set; } = 3;
+        public long TrapDeathDuration { get; set; } = 10;
+        public long TrapRoomDuration { get; set; } = 3;
 
         private Dictionary<string, PropertyInfo> keyPropertyMap = new Dictionary<string, PropertyInfo>
         {

@@ -8,24 +8,27 @@ namespace Celeste.Mod.CelesteArchipelago
 {
     public class CelesteArchipelagoTrapManager
     {
+        public TrapLoadStatus LoadStatus = TrapLoadStatus.NONE;
         public Dictionary<TrapType, Trap> Traps = new();
         private int LocalTrapCounter = 0; // Unrelated to Traps
         private int SavedTrapCounter = 0; // Unrelated to Traps
 
         public CelesteArchipelagoTrapManager() {}
 
-        public CelesteArchipelagoTrapManager(int trapDeathDuration, int trapRoomDuration)
+        public CelesteArchipelagoTrapManager(long trapDeathDuration, long trapRoomDuration)
         {
             GenerateTraps(trapDeathDuration, trapRoomDuration);
+            LoadStatus = TrapLoadStatus.PENDING;
         }
 
-        public CelesteArchipelagoTrapManager(int trapDeathDuration, int trapRoomDuration, int SavedTrapCounter, JObject Traps)
+        public CelesteArchipelagoTrapManager(long trapDeathDuration, long trapRoomDuration, int SavedTrapCounter, JObject Traps)
         {
             this.SavedTrapCounter = SavedTrapCounter;
             GenerateTraps(trapDeathDuration, trapRoomDuration, Traps);
+            LoadStatus = TrapLoadStatus.PENDING;
         }
 
-        private void GenerateTraps(int trapDeathDuration, int trapRoomDuration)
+        private void GenerateTraps(long trapDeathDuration, long trapRoomDuration)
         {
             // Create new trap
             Traps.Add(TrapType.THEO_CRYSTAL, new TheoCrystalTrap(trapDeathDuration, trapRoomDuration));
@@ -33,25 +36,42 @@ namespace Celeste.Mod.CelesteArchipelago
             Traps.Add(TrapType.SEEKERS, new SeekerTrap(trapDeathDuration, trapRoomDuration));
         }
 
-        private void GenerateTraps(int trapDeathDuration, int trapRoomDuration, JObject traps)
+        private void GenerateTraps(long trapDeathDuration, long trapRoomDuration, JObject traps)
         {
             // Create trap based off previous data
             Traps.Add(TrapType.THEO_CRYSTAL, new TheoCrystalTrap(trapDeathDuration, trapRoomDuration, traps[TrapType.THEO_CRYSTAL.ToString()]));
             Traps.Add(TrapType.BADELINE_CHASERS, new BadelineChasersTrap(trapDeathDuration, trapRoomDuration, traps[TrapType.BADELINE_CHASERS.ToString()]));
             Traps.Add(TrapType.SEEKERS, new SeekerTrap(trapDeathDuration, trapRoomDuration, traps[TrapType.SEEKERS.ToString()]));
+            LoadStatus = TrapLoadStatus.PENDING;
+        }
+
+        public void LoadTraps()
+        {
+            if (LoadStatus != TrapLoadStatus.PENDING)
+            {
+                return;
+            }
+
+            Logger.Log("CelesteArchipelago", "Pending trap load. Loading traps.");
+
+            foreach (var trap in Traps.Values)
+            {
+                trap.LoadTrap();
+            }
+
+            LoadStatus = TrapLoadStatus.LOADED;
         }
 
         public void AddTrap(TrapType trapID)
         {
             // Upon loading previous save prevents traps from re-loading on screen
-                        
             if (LocalTrapCounter < SavedTrapCounter)
             {
                 LocalTrapCounter++;
                 return;
             }
 
-            // Traps automatically get disabled, so only make ways to increment or turn on
+            // Traps automatically get disabled
             switch (trapID)
             {
                 case TrapType.THEO_CRYSTAL:
@@ -62,7 +82,7 @@ namespace Celeste.Mod.CelesteArchipelago
                     break;
                 case TrapType.SEEKERS:
                     SeekerTrap seekerTrap = (SeekerTrap)Traps[trapID];
-                    seekerTrap.SetTrap(seekerTrap.seekerCount + 1, true);
+                    seekerTrap.SetTrap(seekerTrap.SeekerCount, true);
 
                     break;
                 default:
@@ -99,17 +119,24 @@ namespace Celeste.Mod.CelesteArchipelago
             ArchipelagoController.Instance.Session.DataStorage[Scope.Slot, "CelesteTrapState"] = JObject.FromObject(Traps);
         }
 
-        public void AddRoomToAllTraps(string room)
+        public void IncrementAllRoomCounts(PlayState state)
         {
             foreach (var trap in Traps.Values)
             {
                 if (trap.IsActive)
                 {
-                    trap.AddRoom(room);
+                    trap.IncrementRoomCount(state.Room);
                 }
             }
 
             ArchipelagoController.Instance.Session.DataStorage[Scope.Slot, "CelesteTrapState"] = JObject.FromObject(Traps);
         }
+    }
+
+    public enum TrapLoadStatus
+    {
+        NONE,
+        PENDING,
+        LOADED,
     }
 }
