@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
 namespace Celeste.Mod.CelesteArchipelago
 {
-    public class Trap
+    public abstract class AbstractTrap
     {
         // All public get values will be saved in the datastorage.
         private long TrapDeathDurationMax = 10;
@@ -13,16 +12,16 @@ namespace Celeste.Mod.CelesteArchipelago
         public HashSet<string> RoomStates { get; protected set; } = new();
         public bool IsActive { get; set; } = false;
 
-        protected Trap(long deathDuration, long roomDuration)
+        // No previous trap data exists, so all values should be default
+        protected AbstractTrap(long deathDuration, long roomDuration)
         {
-            // No previous trap data exists, so all values should be default
             TrapDeathDurationMax = deathDuration;
             TrapRoomDurationMax = roomDuration;
         }
 
-        protected Trap(long deathDuration, long roomDuration, JToken trapValues)
+        // Add all attributes that are recorded from previously played sessions to your trap.
+        protected AbstractTrap(long deathDuration, long roomDuration, JToken trapValues)
         {
-            // Add all attributes that are recorded from previously played sessions to your trap.
             TrapDeathDurationMax = deathDuration;
             TrapRoomDurationMax = roomDuration;
             IsActive = (bool)trapValues["IsActive"];
@@ -30,29 +29,23 @@ namespace Celeste.Mod.CelesteArchipelago
             RoomStates = trapValues["RoomStates"].ToObject<HashSet<string>>();
         }
 
-        public virtual void LoadTrap()
-        {
-            // Load trap data from previous session
-            throw new NotImplementedException("This method must be overridden in derived classes.");
-        }
+        // Load trap data from previous session
+        public abstract void LoadTrap();
 
-        public virtual void SetTrap(object value, bool isExtending)
-        {
-            // IsActive is set to true after the first successful call to this method, this can act like a first time ran check
-            throw new NotImplementedException("This method must be overridden in derived classes.");
-        }
+        // IsActive is set to true after the first successful call to this method, this can act like a first time ran check
+        public abstract void SetTrap(object value, bool isExtending);
 
+        // Always call this method before resetting the trap
         public virtual void ResetTrap()
         {
-            // Always call this method before resetting the trap
             IsActive = false;
             DeathCount = 0;
             RoomStates = new();
         }
 
+        // Making a trap longer and/or harder based on getting sent multiple of this trap
         protected virtual void ExtendTrap()
         {
-            // Making a trap longer and/or harder based on getting sent multiple of this trap
             DeathCount = 0;
             RoomStates = new();
         }

@@ -158,7 +158,7 @@ namespace Celeste.Mod.CelesteArchipelago
                     Session.DataStorage[Scope.Slot, "CelestePlayState"].Initialize("1;0;0;dotutorial");
                     Session.DataStorage[Scope.Slot, "CelesteCheckpointState"].Initialize(long.MinValue);
                     Session.DataStorage[Scope.Slot, "CelesteTrapCount"].Initialize(0);
-                    Session.DataStorage[Scope.Slot, "CelesteTrapState"].Initialize(JObject.FromObject(new Dictionary<TrapType, Trap>()));
+                    Session.DataStorage[Scope.Slot, "CelesteTrapState"].Initialize(JObject.FromObject(new Dictionary<TrapType, AbstractTrap>()));
 
                     JObject traps = Session.DataStorage[Scope.Slot, "CelesteTrapState"].To<JObject>();
                     if (traps.Count == 0)

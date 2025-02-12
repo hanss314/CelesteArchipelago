@@ -4,7 +4,7 @@ using static CelesteArchipelago.ExtendedVariantInterop;
 
 namespace Celeste.Mod.CelesteArchipelago
 {
-    public class SeekerTrap : Trap
+    public class SeekerTrap : AbstractTrap
     {
         public int SeekerCount { get; protected set; } = 0;
         public SeekerTrap(long deathDuration, long roomDuration) : base(deathDuration, roomDuration) { }

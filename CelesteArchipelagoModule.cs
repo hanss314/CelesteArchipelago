@@ -43,6 +43,5 @@ namespace Celeste.Mod.CelesteArchipelago {
 
             Everest.Events.MainMenu.OnCreateButtons -= ArchipelagoUI.ReplaceClimbButton;
         }
-
     }
 }

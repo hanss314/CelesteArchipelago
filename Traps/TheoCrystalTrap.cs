@@ -4,7 +4,7 @@ using static CelesteArchipelago.ExtendedVariantInterop;
 
 namespace Celeste.Mod.CelesteArchipelago
 {
-    public class TheoCrystalTrap : Trap
+    public class TheoCrystalTrap : AbstractTrap
     {
         public TheoCrystalTrap(long deathDuration, long roomDuration) : base(deathDuration, roomDuration) { }
 

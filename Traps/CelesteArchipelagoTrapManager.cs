@@ -8,7 +8,7 @@ namespace Celeste.Mod.CelesteArchipelago
     public class CelesteArchipelagoTrapManager
     {
         public TrapLoadStatus LoadStatus = TrapLoadStatus.NONE;
-        public Dictionary<TrapType, Trap> Traps = new();
+        public Dictionary<TrapType, AbstractTrap> Traps = new();
         private int LocalTrapCounter = 0; // Unrelated to Traps
         private int SavedTrapCounter = 0; // Unrelated to Traps
 
@@ -64,7 +64,6 @@ namespace Celeste.Mod.CelesteArchipelago
 
         public void AddTrap(TrapType trapID)
         {
-            Logger.Log(LogLevel.Debug, "CelesteArchipelago", $"LocalTrapCounter: {LocalTrapCounter}, SavedTrapCounter: {SavedTrapCounter}");
             // Upon loading previous save prevents traps from re-loading on screen
             if (LocalTrapCounter < SavedTrapCounter)
             {
