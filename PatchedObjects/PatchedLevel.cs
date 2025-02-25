@@ -32,7 +32,7 @@ namespace Celeste.Mod.CelesteArchipelago
                 var state = new PlayState(true, level.Session.Area, "overworld");
                 Logger.Log("CelesteArchipelago", $"Exiting level. Setting PlayState to {state}");
                 ArchipelagoController.Instance.PlayState = state;
-                ArchipelagoController.Instance.trapManager.LoadStatus = TrapLoadStatus.PENDING;
+                ArchipelagoController.Instance.trapManager.HasTrapsLoaded = false;
             }
         }
     }

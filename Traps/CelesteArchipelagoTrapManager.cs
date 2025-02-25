@@ -7,8 +7,8 @@ namespace Celeste.Mod.CelesteArchipelago
 {
     public class CelesteArchipelagoTrapManager
     {
-        public TrapLoadStatus LoadStatus = TrapLoadStatus.NONE;
-        public Dictionary<TrapType, AbstractTrap> Traps = new();
+        public bool HasTrapsLoaded = false;
+        public Dictionary<TrapType, AbstractTrap> Traps { get; private set; } = new();
         private int LocalTrapCounter = 0; // Unrelated to Traps
         private int SavedTrapCounter = 0; // Unrelated to Traps
 
@@ -17,14 +17,14 @@ namespace Celeste.Mod.CelesteArchipelago
         public CelesteArchipelagoTrapManager(long trapDeathDuration, long trapRoomDuration)
         {
             GenerateTraps(trapDeathDuration, trapRoomDuration);
-            LoadStatus = TrapLoadStatus.PENDING;
+            HasTrapsLoaded = false;
         }
 
         public CelesteArchipelagoTrapManager(long trapDeathDuration, long trapRoomDuration, int SavedTrapCounter, JObject Traps)
         {
             this.SavedTrapCounter = SavedTrapCounter;
             GenerateTraps(trapDeathDuration, trapRoomDuration, Traps);
-            LoadStatus = TrapLoadStatus.PENDING;
+            HasTrapsLoaded = false;
         }
 
         private void GenerateTraps(long trapDeathDuration, long trapRoomDuration)
@@ -47,7 +47,7 @@ namespace Celeste.Mod.CelesteArchipelago
 
         public void LoadTraps()
         {
-            if (LoadStatus != TrapLoadStatus.PENDING)
+            if (HasTrapsLoaded)
             {
                 return;
             }
@@ -59,7 +59,7 @@ namespace Celeste.Mod.CelesteArchipelago
                 trap.LoadTrap();
             }
 
-            LoadStatus = TrapLoadStatus.LOADED;
+            HasTrapsLoaded = true;
         }
 
         public void AddTrap(TrapType trapID)
@@ -133,12 +133,5 @@ namespace Celeste.Mod.CelesteArchipelago
 
             ArchipelagoController.Instance.Session.DataStorage[Scope.Slot, "CelesteTrapState"] = JObject.FromObject(Traps);
         }
-    }
-
-    public enum TrapLoadStatus
-    {
-        NONE,
-        PENDING,
-        LOADED,
     }
 }
