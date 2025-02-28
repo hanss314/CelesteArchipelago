@@ -54,8 +54,28 @@ namespace Celeste.Mod.CelesteArchipelago
                 {
                     Achievements.Register(Achievement.WOW);
                 }
-                // SaveData.Instance.AddStrawberry(self.ID, self.Golden);
-                ArchipelagoController.Instance.ProgressionSystem.OnCollectedClient(SaveData.Instance.CurrentSession_Safe.Area, CollectableType.STRAWBERRY, self.ID); // NEW
+                //SaveData.Instance.AddStrawberry(self.ID, self.Golden);
+
+                // BEGIN NEW
+                
+                CollectableType berryType = CollectableType.STRAWBERRY; 
+                if (self.ID.Equals(new EntityID("end", 4)))
+                {
+                    berryType = CollectableType.WINGED_GOLDEN;
+                }
+                else if (self.Golden)
+                {
+                    berryType = CollectableType.GOLDEN;
+                } 
+                else if (SaveData.Instance.CurrentSession_Safe.Area.ChapterIndex == 10) 
+                {
+                    berryType = CollectableType.MOON_BERRY;
+                }
+
+                ArchipelagoController.Instance.ProgressionSystem.OnCollectedClient(SaveData.Instance.CurrentSession_Safe.Area, berryType, self.ID);
+                
+                //END NEW
+                
                 Session session = (self.Scene as Level).Session;
                 session.DoNotLoad.Add(self.ID);
                 session.Strawberries.Add(self.ID);

@@ -15,10 +15,15 @@ namespace Celeste.Mod.CelesteArchipelago
         public const int OFFSET_LEVEL = 1000;
         public const int OFFSET_SIDE = 100;
 
+        // Type of item (i.e. completion, cassette, berry etc.)
         public CollectableType type;
+        // Celeste Chapter
         public int area;
+        // Celeste side
         public int mode;
+        // offset for berries
         public int offset;
+        // Corresponding strawberry entity for strawberry locations
         public EntityID? strawberry;
 
         private static Dictionary<int, EntityID> StrawberryMap;
@@ -59,6 +64,17 @@ namespace Celeste.Mod.CelesteArchipelago
             if (type == CollectableType.STRAWBERRY)
             {
                 strawberry = GetStrawberryEntityID(area, mode, offset);
+            } 
+            else if (this.type == CollectableType.GOLDEN) 
+            {   
+                this.offset = 0;
+                this.strawberry = null;
+            }
+            else if (this.type == CollectableType.WINGED_GOLDEN)
+            {
+                this.type = CollectableType.GOLDEN;
+                this.offset = 1;
+                this.strawberry = null;
             }
         }
 
@@ -68,36 +84,32 @@ namespace Celeste.Mod.CelesteArchipelago
             this.area = area;
             this.mode = mode;
 
-            if (!strawberry.HasValue)
+            if (this.type == CollectableType.GOLDEN) 
+            {   
+                this.offset = 0;
+                this.strawberry = null;
+            }
+            else if (this.type == CollectableType.WINGED_GOLDEN)
+            {
+                this.type = CollectableType.GOLDEN;
+                this.offset = 1;
+                this.strawberry = null;
+            }
+            else if (!strawberry.HasValue)
             {
                 offset = 0;
                 this.strawberry = null;
             }
-            else
+            else 
             {
                 offset = (GetStrawberryOffset(strawberry.Value) ?? 99) % OFFSET_SIDE;
                 this.strawberry = GetStrawberryEntityID(area, mode, offset);
             }
         }
 
-        public ArchipelagoNetworkItem(CollectableType type, AreaKey area, EntityID? strawberry = null)
-        {
-            this.type = type;
-            this.area = area.ID;
-            this.mode = (int)area.Mode;
-
-            if (!strawberry.HasValue)
-            {
-                offset = 0;
-                this.strawberry = null;
-            }
-            else
-            {
-                offset = (GetStrawberryOffset(strawberry.Value) ?? 99) % OFFSET_SIDE;
-                this.strawberry = GetStrawberryEntityID(area.ID, mode, offset);
-            }
-        }
-
+        public ArchipelagoNetworkItem(CollectableType type, AreaKey area, EntityID? strawberry = null) :
+            this(type, area.ID, (int)area.Mode, strawberry) {}
+       
         private static void BuildStrawberryMap()
         {
             StrawberryMap = new Dictionary<int, EntityID>();
@@ -105,6 +117,7 @@ namespace Celeste.Mod.CelesteArchipelago
 
             int offset, id;
             EntityID strawberry;
+            
             foreach (AreaData area in AreaData.Areas)
             {
                 for (int i = 0; i < area.Mode.Length; i++)

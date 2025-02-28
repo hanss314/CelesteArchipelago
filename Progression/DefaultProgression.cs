@@ -106,8 +106,14 @@ namespace Celeste.Mod.CelesteArchipelago
                     SaveData.Instance.Areas_Safe[area.ID].Modes[(int)area.Mode].HeartGem = true;
                     break;
                 case CollectableType.STRAWBERRY:
+                case CollectableType.MOON_BERRY:
                     if (entity == null) return;
                     SaveData.Instance.AddStrawberry(area, entity.Value, false);
+                    break;
+                case CollectableType.GOLDEN:
+                case CollectableType.WINGED_GOLDEN:
+                    if (entity == null) return;
+                    SaveData.Instance.AddStrawberry(area, entity.Value, true);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException($"CollectableType {collectable} not implemented.");
