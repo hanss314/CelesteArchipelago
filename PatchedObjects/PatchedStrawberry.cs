@@ -28,7 +28,16 @@ namespace Celeste.Mod.CelesteArchipelago
         private static void ctor(On.Celeste.Strawberry.orig_ctor orig, Strawberry self, EntityData data, Microsoft.Xna.Framework.Vector2 offset, EntityID gid)
         {
             orig(self, data, offset, gid);
-            DynamicData.For(self).Set("isGhostBerry", ArchipelagoController.Instance.ProgressionSystem.IsCollectedVisually(SaveData.Instance.CurrentSession_Safe.Area, CollectableType.STRAWBERRY, self.ID));
+            bool isGhostBerry;
+
+            // IsCollectedVisually is the same for all berry types (red, golden and moon)
+            isGhostBerry = ArchipelagoController.Instance.ProgressionSystem.IsCollectedVisually(
+                SaveData.Instance.CurrentSession_Safe.Area, 
+                CollectableType.STRAWBERRY, 
+                self.ID
+            );
+            
+            DynamicData.For(self).Set("isGhostBerry", isGhostBerry);
         }
 
         private static void orig_OnCollect(orig_Strawberry_orig_OnCollect orig, Strawberry self)
@@ -57,23 +66,17 @@ namespace Celeste.Mod.CelesteArchipelago
                 //SaveData.Instance.AddStrawberry(self.ID, self.Golden);
 
                 // BEGIN NEW
-                
                 CollectableType berryType = CollectableType.STRAWBERRY; 
-                if (self.ID.Equals(new EntityID("end", 4)))
-                {
-                    berryType = CollectableType.WINGED_GOLDEN;
-                }
-                else if (self.Golden)
+                if (self.Golden)
                 {
                     berryType = CollectableType.GOLDEN;
                 } 
-                else if (SaveData.Instance.CurrentSession_Safe.Area.ChapterIndex == 10) 
+                else if (self.Moon) 
                 {
                     berryType = CollectableType.MOON_BERRY;
                 }
 
                 ArchipelagoController.Instance.ProgressionSystem.OnCollectedClient(SaveData.Instance.CurrentSession_Safe.Area, berryType, self.ID);
-                
                 //END NEW
                 
                 Session session = (self.Scene as Level).Session;

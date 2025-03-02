@@ -26,8 +26,13 @@ namespace Celeste.Mod.CelesteArchipelago
         // Corresponding strawberry entity for strawberry locations
         public EntityID? strawberry;
 
+        // Maps from Chapter+Side+Offset <-> Strawberry in level
         private static Dictionary<int, EntityID> StrawberryMap;
         private static Dictionary<string, int> StrawberryReverseMap;
+
+        // Maps from Chapter + Side + Offset -> Golden Strawbrry in level
+        // Offset is only 1 for dashless
+        private static Dictionary<int, EntityID> GoldenStrawberryMap; 
 
         public long ID
         {
@@ -61,20 +66,13 @@ namespace Celeste.Mod.CelesteArchipelago
             temp %= OFFSET_SIDE;
 
             offset = temp;
-            if (type == CollectableType.STRAWBERRY)
+            if (type == CollectableType.STRAWBERRY || type == CollectableType.MOON_BERRY)
             {
                 strawberry = GetStrawberryEntityID(area, mode, offset);
             } 
             else if (this.type == CollectableType.GOLDEN) 
             {   
-                this.offset = 0;
-                this.strawberry = null;
-            }
-            else if (this.type == CollectableType.WINGED_GOLDEN)
-            {
-                this.type = CollectableType.GOLDEN;
-                this.offset = 1;
-                this.strawberry = null;
+                this.strawberry = GetGoldenEntityID(area, mode, offset);
             }
         }
 
@@ -84,26 +82,26 @@ namespace Celeste.Mod.CelesteArchipelago
             this.area = area;
             this.mode = mode;
 
-            if (this.type == CollectableType.GOLDEN) 
-            {   
-                this.offset = 0;
-                this.strawberry = null;
-            }
-            else if (this.type == CollectableType.WINGED_GOLDEN)
-            {
-                this.type = CollectableType.GOLDEN;
-                this.offset = 1;
-                this.strawberry = null;
-            }
-            else if (!strawberry.HasValue)
+            if (!strawberry.HasValue)
             {
                 offset = 0;
                 this.strawberry = null;
+            }
+            else if (this.type == CollectableType.GOLDEN) 
+            {   
+                bool isWinged = GetGoldenEntityID(area, mode, 1).Equals(strawberry);
+                this.offset = isWinged ? 1 : 0;
+                this.strawberry = GetGoldenEntityID(area, mode, offset);
             }
             else 
             {
                 offset = (GetStrawberryOffset(strawberry.Value) ?? 99) % OFFSET_SIDE;
                 this.strawberry = GetStrawberryEntityID(area, mode, offset);
+            }
+
+            if (area == 10 && type == CollectableType.STRAWBERRY) 
+            {
+                this.type = CollectableType.MOON_BERRY;
             }
         }
 
@@ -114,6 +112,7 @@ namespace Celeste.Mod.CelesteArchipelago
         {
             StrawberryMap = new Dictionary<int, EntityID>();
             StrawberryReverseMap = new Dictionary<string, int>();
+            GoldenStrawberryMap = new Dictionary<int, EntityID>();
 
             int offset, id;
             EntityID strawberry;
@@ -142,6 +141,20 @@ namespace Celeste.Mod.CelesteArchipelago
                             offset++;
                         }
                     }
+                    // Add golden berry
+                    if (modeProperties.MapData.Goldenberries.Count > 0) {
+                        EntityData entityData = modeProperties.MapData.Goldenberries[0];
+                        strawberry = new EntityID(entityData.Level.Name, entityData.ID);
+                        id = area.ID * OFFSET_LEVEL + i * OFFSET_SIDE;
+                        GoldenStrawberryMap.Add(id, strawberry);
+                    }
+                    if (modeProperties.MapData.DashlessGoldenberries.Count > 0) {
+                        EntityData entityData = modeProperties.MapData.DashlessGoldenberries[0];
+                        strawberry = new EntityID(entityData.Level.Name, entityData.ID);
+                        id = area.ID * OFFSET_LEVEL + i * OFFSET_SIDE + 1;
+                        GoldenStrawberryMap.Add(id, strawberry);
+                    }
+                    
                 }
             }
         }
@@ -173,6 +186,22 @@ namespace Celeste.Mod.CelesteArchipelago
             {
                 return StrawberryReverseMap[strawberry.Key];
             }
+            return null;
+        }
+
+        private static EntityID? GetGoldenEntityID(int area, int mode, int offset)
+        {
+            if (StrawberryMap == null)
+            {
+                BuildStrawberryMap();
+            }
+
+            int index = area * OFFSET_LEVEL + mode * OFFSET_SIDE + offset;
+            if (GoldenStrawberryMap.ContainsKey(index))
+            {
+                return GoldenStrawberryMap[index];
+            }
+
             return null;
         }
     }

@@ -6,6 +6,8 @@ namespace Celeste.Mod.CelesteArchipelago
     public class DefaultProgression : IProgressionSystem
     {
         private int StrawberryCount { get; set; } = 0;
+        private int MoonBerryCount { get; set; } = 0;
+        private int GoldenCount { get; set; } = 0;
         private FlagStorage CassettesVisual { get; set; } = new FlagStorage();
         private FlagStorage CassettesLogical { get; set; } = new FlagStorage();
         private FlagStorage HeartGems { get; set; } = new FlagStorage();
@@ -69,6 +71,8 @@ namespace Celeste.Mod.CelesteArchipelago
                 case CollectableType.HEARTGEM:
                     return SaveData.Instance.Areas_Safe[area.ID].Modes[(int)area.Mode].HeartGem;
                 case CollectableType.STRAWBERRY:
+                case CollectableType.GOLDEN:
+                case CollectableType.MOON_BERRY:
                     return entity != null && SaveData.Instance.Areas_Safe[area.ID].Modes[(int)area.Mode].Strawberries.Contains(entity.Value);
                 default:
                     throw new ArgumentOutOfRangeException($"CollectableType {collectable} not implemented.");
@@ -86,6 +90,8 @@ namespace Celeste.Mod.CelesteArchipelago
                 case CollectableType.HEARTGEM:
                     return HeartGems.IsFlagged(area);
                 case CollectableType.STRAWBERRY:
+                case CollectableType.MOON_BERRY:
+                case CollectableType.GOLDEN:
                     return false;
                 default:
                     throw new ArgumentOutOfRangeException($"CollectableType {collectable} not implemented.");
@@ -111,7 +117,6 @@ namespace Celeste.Mod.CelesteArchipelago
                     SaveData.Instance.AddStrawberry(area, entity.Value, false);
                     break;
                 case CollectableType.GOLDEN:
-                case CollectableType.WINGED_GOLDEN:
                     if (entity == null) return;
                     SaveData.Instance.AddStrawberry(area, entity.Value, true);
                     break;
@@ -140,6 +145,12 @@ namespace Celeste.Mod.CelesteArchipelago
                 case CollectableType.STRAWBERRY:
                     StrawberryCount += 1;
                     break;
+                case CollectableType.MOON_BERRY:
+                    MoonBerryCount += 1;
+                    break;
+                case CollectableType.GOLDEN:
+                    GoldenCount += 1;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException($"CollectableType {area} {collectable} {entity} not implemented.");
             }
@@ -159,6 +170,8 @@ namespace Celeste.Mod.CelesteArchipelago
                 case CollectableType.HEARTGEM:
                     return SaveData.Instance.TotalHeartGems;
                 case CollectableType.STRAWBERRY:
+                case CollectableType.GOLDEN:
+                case CollectableType.MOON_BERRY:
                     return SaveData.Instance.TotalStrawberries_Safe;
                 default:
                     throw new ArgumentOutOfRangeException($"CollectableType {collectable} not implemented.");
@@ -177,6 +190,10 @@ namespace Celeste.Mod.CelesteArchipelago
                     return HeartGems.GetTotal();
                 case CollectableType.STRAWBERRY:
                     return StrawberryCount;
+                case CollectableType.MOON_BERRY:
+                    return MoonBerryCount;
+                case CollectableType.GOLDEN:
+                    return GoldenCount;
                 default:
                     throw new ArgumentOutOfRangeException($"CollectableType {collectable} not implemented.");
             }
