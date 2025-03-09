@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Celeste.Mod.CelesteArchipelago
 {
-    
-
     public class ArchipelagoNetworkItem
     {
         public const int OFFSET_BASE = 8000000;
@@ -19,8 +14,7 @@ namespace Celeste.Mod.CelesteArchipelago
         public int area;
         public int mode;
         public int offset;
-        public EntityID? strawberry;
-        public EntityID? trap;
+        public EntityID? entity;
 
         private static Dictionary<int, EntityID> StrawberryMap;
         private static Dictionary<string, int> StrawberryReverseMap;
@@ -59,46 +53,32 @@ namespace Celeste.Mod.CelesteArchipelago
             offset = temp;
             if (type == CollectableType.STRAWBERRY)
             {
-                strawberry = GetStrawberryEntityID(area, mode, offset);
+                entity = GetStrawberryEntityID(area, mode, offset);
             }
             else if (type == CollectableType.TRAP) {
-                trap = GetTrapEntityID((TrapType)offset);
+                entity = GetTrapEntityID((TrapType)offset);
             }
         }
 
-        public ArchipelagoNetworkItem(CollectableType type, int area, int mode, EntityID? strawberry = null)
+        public ArchipelagoNetworkItem(CollectableType type, int area, int mode, EntityID? entity = null)
         {
             this.type = type;
             this.area = area;
             this.mode = mode;
 
-            if (!strawberry.HasValue)
+            if (!entity.HasValue)
             {
                 offset = 0;
-                this.strawberry = null;
+                this.entity = null;
+            }
+            else if (type == CollectableType.TRAP)
+            {
+                this.entity = null;
             }
             else
             {
-                offset = (GetStrawberryOffset(strawberry.Value) ?? 99) % OFFSET_SIDE;
-                this.strawberry = GetStrawberryEntityID(area, mode, offset);
-            }
-        }
-
-        public ArchipelagoNetworkItem(CollectableType type, AreaKey area, EntityID? strawberry = null)
-        {
-            this.type = type;
-            this.area = area.ID;
-            this.mode = (int)area.Mode;
-
-            if (!strawberry.HasValue)
-            {
-                offset = 0;
-                this.strawberry = null;
-            }
-            else
-            {
-                offset = (GetStrawberryOffset(strawberry.Value) ?? 99) % OFFSET_SIDE;
-                this.strawberry = GetStrawberryEntityID(area.ID, mode, offset);
+                offset = (GetStrawberryOffset(entity.Value) ?? 99) % OFFSET_SIDE;
+                this.entity = GetStrawberryEntityID(area, mode, offset);
             }
         }
 
@@ -169,25 +149,25 @@ namespace Celeste.Mod.CelesteArchipelago
 
         private static EntityID GetTrapEntityID(TrapType offset)
         {
-            string level;
+            string label;
             switch (offset) {
                 case TrapType.THEO_CRYSTAL:
-                    level = "Theo Crystal";
+                    label = TrapType.THEO_CRYSTAL.ToString();
                     break;
                 case TrapType.BADELINE_CHASERS:
-                    level = "Badeline Chasers";
+                    label = TrapType.BADELINE_CHASERS.ToString();
                     break;
                 case TrapType.SEEKER:
-                    level = "Seeker";
+                    label = TrapType.SEEKER.ToString();
                     break;
                 case TrapType.STAMINA:
-                    level = "Stamina";
+                    label = TrapType.STAMINA.ToString();
                     break;
                 default: 
                     throw new ArgumentOutOfRangeException($"Trap ({offset}) has not been implemented");
             }
 
-            EntityID entityID = new EntityID(level, (int)offset);
+            EntityID entityID = new EntityID(label, (int)offset);
             return entityID;
         }
     }

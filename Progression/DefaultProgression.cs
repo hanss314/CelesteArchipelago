@@ -114,14 +114,13 @@ namespace Celeste.Mod.CelesteArchipelago
                     {
                         ArchipelagoController.Instance.trapManager.AddTrap((TrapType)entity.Value.ID);
                     }
-                    entity = null;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException($"CollectableType {collectable} not implemented.");
             }
             if(!isReplay)
             {
-                ArchipelagoController.Instance.SendLocationCallback(new ArchipelagoNetworkItem(collectable, area, entity));
+                ArchipelagoController.Instance.SendLocationCallback(new ArchipelagoNetworkItem(collectable, area.ID, (int)area.Mode, entity));
             }
         }
 
