@@ -66,9 +66,9 @@ namespace Celeste.Mod.CelesteArchipelago
             temp %= OFFSET_SIDE;
 
             offset = temp;
-            if (type == CollectableType.STRAWBERRY || type == CollectableType.MOON_BERRY)
+            if (this.type == CollectableType.STRAWBERRY)
             {
-                strawberry = GetStrawberryEntityID(area, mode, offset);
+                this.strawberry = GetStrawberryEntityID(area, mode, offset);
             } 
             else if (this.type == CollectableType.GOLDEN) 
             {   
@@ -97,11 +97,6 @@ namespace Celeste.Mod.CelesteArchipelago
             {
                 offset = (GetStrawberryOffset(strawberry.Value) ?? 99) % OFFSET_SIDE;
                 this.strawberry = GetStrawberryEntityID(area, mode, offset);
-            }
-
-            if (area == 10 && type == CollectableType.STRAWBERRY) 
-            {
-                this.type = CollectableType.MOON_BERRY;
             }
         }
 

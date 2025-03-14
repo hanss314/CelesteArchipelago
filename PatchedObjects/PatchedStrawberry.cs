@@ -70,10 +70,6 @@ namespace Celeste.Mod.CelesteArchipelago
                 if (self.Golden)
                 {
                     berryType = CollectableType.GOLDEN;
-                } 
-                else if (self.Moon) 
-                {
-                    berryType = CollectableType.MOON_BERRY;
                 }
 
                 ArchipelagoController.Instance.ProgressionSystem.OnCollectedClient(SaveData.Instance.CurrentSession_Safe.Area, berryType, self.ID);
