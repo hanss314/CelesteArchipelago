@@ -208,6 +208,7 @@ namespace Celeste.Mod.CelesteArchipelago
                 case VictoryConditionOptions.CHAPTER_8_CORE_C:
                     return new AreaKey(9, AreaMode.CSide);
                 case VictoryConditionOptions.CHAPTER_9_FAREWELL_A:
+                case VictoryConditionOptions.BERRIES_202:
                     return new AreaKey(10, AreaMode.Normal);
                 default:
                     throw new ArgumentOutOfRangeException($"Victory Condition {option} not implemented.");
