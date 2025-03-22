@@ -139,6 +139,11 @@ namespace Celeste.Mod.CelesteArchipelago
                     break;
                 case CollectableType.STRAWBERRY:
                     StrawberryCount += 1;
+                    VictoryConditionOptions victoryCondition = (VictoryConditionOptions)SlotData.VictoryCondition;
+                    if (victoryCondition == VictoryConditionOptions.BERRIES_202 && StrawberryCount >= 202)
+                    {
+                        ArchipelagoController.Instance.SendVictory();
+                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException($"CollectableType {area} {collectable} {entity} not implemented.");

@@ -66,12 +66,7 @@ namespace Celeste.Mod.CelesteArchipelago
                 //SaveData.Instance.AddStrawberry(self.ID, self.Golden);
 
                 // BEGIN NEW
-                CollectableType berryType = CollectableType.STRAWBERRY; 
-                if (self.Golden)
-                {
-                    berryType = CollectableType.GOLDEN;
-                }
-
+                CollectableType berryType = self.Golden ? CollectableType.GOLDEN : CollectableType.STRAWBERRY; 
                 ArchipelagoController.Instance.ProgressionSystem.OnCollectedClient(SaveData.Instance.CurrentSession_Safe.Area, berryType, self.ID);
                 //END NEW
                 
