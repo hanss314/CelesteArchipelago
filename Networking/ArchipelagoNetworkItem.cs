@@ -96,6 +96,10 @@ namespace Celeste.Mod.CelesteArchipelago
             else 
             {
                 offset = (GetStrawberryOffset(strawberry.Value) ?? 99) % OFFSET_SIDE;
+                if (offset == 99 && area == 10) {
+                    // special case for moon berry bc idk where it's stored
+                    offset = 0;
+                }
                 this.strawberry = GetStrawberryEntityID(area, mode, offset);
             }
         }
