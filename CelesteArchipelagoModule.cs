@@ -1,4 +1,6 @@
 ﻿using System;
+using CelesteArchipelago;
+using MonoMod.ModInterop;
 
 namespace Celeste.Mod.CelesteArchipelago {
     public class CelesteArchipelagoModule : EverestModule {
@@ -23,9 +25,12 @@ namespace Celeste.Mod.CelesteArchipelago {
             // release builds use info logging to reduce spam in log files
             Logger.SetLogLevel("CelesteArchipelago", LogLevel.Info);
 #endif
+
         }
 
         public override void Load() {
+            typeof(ExtendedVariantInterop).ModInterop();
+            
             new ArchipelagoController(Celeste.Instance);
             ArchipelagoController.Instance.LoadPatches();
 
@@ -38,6 +43,5 @@ namespace Celeste.Mod.CelesteArchipelago {
 
             Everest.Events.MainMenu.OnCreateButtons -= ArchipelagoUI.ReplaceClimbButton;
         }
-
     }
 }

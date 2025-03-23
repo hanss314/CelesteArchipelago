@@ -7,9 +7,9 @@ using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
 
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Celeste.Mod.CelesteArchipelago
 {
@@ -44,6 +44,7 @@ namespace Celeste.Mod.CelesteArchipelago
         
         }
 
+        public CelesteArchipelagoTrapManager trapManager { get; private set; }
         private CheckpointState _checkpointState;
         public CheckpointState CheckpointState
         {
@@ -86,8 +87,8 @@ namespace Celeste.Mod.CelesteArchipelago
             new PatchedOuiChapterSelect(),
             new PatchedOuiMainMenu(),
             new PatchedOuiJournal(),
-            new PatchedSaveData(),
             new PatchedPlayer(),
+            new PatchedSaveData(),
             new PatchedStrawberry(),
             new PatchedBerryCounter(),
         };
@@ -102,6 +103,7 @@ namespace Celeste.Mod.CelesteArchipelago
             ChatHandler = new ChatHandler(Game);
             game.Components.Add(ChatHandler);
             ProgressionSystem = new NullProgression();
+            trapManager = new CelesteArchipelagoTrapManager();
         }
 
         public void Init()
@@ -159,6 +161,7 @@ namespace Celeste.Mod.CelesteArchipelago
                     {
                         ProgressionSystem = new DefaultProgression(SlotData);
                     }
+
                     Session.DataStorage[Scope.Slot, "CelestePlayState"].Initialize("1;0;0;dotutorial");
                     Session.DataStorage[Scope.Slot, "CelesteCheckpointState"].Initialize(long.MinValue);
                     Session.DataStorage[Scope.Slot, "CelesteDeathAmnestyState"].Initialize(0);
@@ -178,12 +181,29 @@ namespace Celeste.Mod.CelesteArchipelago
                         DeathLinkService.DisableDeathLink();
                     }
 
+                    Session.DataStorage[Scope.Slot, "CelesteTrapCount"].Initialize(0);
+                    Session.DataStorage[Scope.Slot, "CelesteTrapState"].Initialize(JObject.FromObject(new Dictionary<TrapType, AbstractTrap>()));
+
+                    JObject traps = Session.DataStorage[Scope.Slot, "CelesteTrapState"].To<JObject>();
+                    if (traps.Count == 0)
+                    {
+                        // Create new Traps
+                        trapManager = new CelesteArchipelagoTrapManager(SlotData.TrapDeathDuration, SlotData.TrapRoomDuration);
+                    }
+                    else
+                    {
+                        // Load previous traps
+                        int trapCounter = Session.DataStorage[Scope.Slot, "CelesteTrapCount"].To<int>();
+                        trapManager = new CelesteArchipelagoTrapManager(SlotData.TrapDeathDuration, SlotData.TrapRoomDuration, trapCounter, traps);
+                    }
+
                     Connection.Disposed += (sender, args) =>
                     {
                         Session.MessageLog.OnMessageReceived -= HandleMessage;
                         Session.Items.ItemReceived -= ReceiveItemCallback;
                         ProgressionSystem = new NullProgression();
                         DeathLinkService = null;
+                        trapManager.ResetAllTraps();
                     };
                 }
                 else
@@ -214,7 +234,7 @@ namespace Celeste.Mod.CelesteArchipelago
                 ArchipelagoNetworkItem item = new ArchipelagoNetworkItem(itemID);
 
                 // Collect received item via chosen progression system
-                ProgressionSystem.OnCollectedServer(item.areaKey, item.type, item.strawberry);
+                ProgressionSystem.OnCollectedServer(item.areaKey, item.type, item.entity);
                 receivedItemsHelper.DequeueItem();
             }
         }
@@ -251,7 +271,7 @@ namespace Celeste.Mod.CelesteArchipelago
             {
                 Logger.Log("CelesteArchipelago", $"Replaying location {Session.Locations.GetLocationNameFromId(loc) ?? loc.ToString()}");
                 item = new ArchipelagoNetworkItem(loc);
-                ProgressionSystem.OnCollectedClient(item.areaKey, item.type, item.strawberry, true);
+                ProgressionSystem.OnCollectedClient(item.areaKey, item.type, item.entity, true);
             }
         }
 

@@ -115,12 +115,18 @@ namespace Celeste.Mod.CelesteArchipelago
                     if (entity == null) return;
                     SaveData.Instance.AddStrawberry(area, entity.Value, true);
                     break;
+                case CollectableType.TRAP:
+                    if (!isReplay)
+                    {
+                        ArchipelagoController.Instance.trapManager.AddTrap((TrapType)entity.Value.ID);
+                    }
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException($"CollectableType {collectable} not implemented.");
             }
             if(!isReplay)
             {
-                ArchipelagoController.Instance.SendLocationCallback(new ArchipelagoNetworkItem(collectable, area, entity));
+                ArchipelagoController.Instance.SendLocationCallback(new ArchipelagoNetworkItem(collectable, area.ID, (int)area.Mode, entity));
             }
         }
 
@@ -144,6 +150,9 @@ namespace Celeste.Mod.CelesteArchipelago
                     {
                         ArchipelagoController.Instance.SendVictory();
                     }
+                    break;
+                case CollectableType.TRAP:
+                    ArchipelagoController.Instance.trapManager.AddTrap((TrapType)entity.Value.ID);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException($"CollectableType {area} {collectable} {entity} not implemented.");

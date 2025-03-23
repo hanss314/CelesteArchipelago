@@ -14,5 +14,6 @@ namespace Celeste.Mod.CelesteArchipelago
         HEARTGEM = 3,
         STRAWBERRY = 4,
         GOLDEN = 5,
+        TRAP = 6
     }
 }

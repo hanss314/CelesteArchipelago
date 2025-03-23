@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Celeste.Mod.CelesteArchipelago
 {
-    
-
     public class ArchipelagoNetworkItem
     {
         public const int OFFSET_BASE = 8000000;
@@ -23,8 +18,8 @@ namespace Celeste.Mod.CelesteArchipelago
         public int mode;
         // offset for berries
         public int offset;
-        // Corresponding strawberry entity for strawberry locations
-        public EntityID? strawberry;
+        // Corresponding strawberry entity for strawberry locations, and traps
+        public EntityID? entity;
 
         // Maps from Chapter+Side+Offset <-> Strawberry in level
         private static Dictionary<int, EntityID> StrawberryMap;
@@ -68,44 +63,51 @@ namespace Celeste.Mod.CelesteArchipelago
             offset = temp;
             if (this.type == CollectableType.STRAWBERRY)
             {
-                this.strawberry = GetStrawberryEntityID(area, mode, offset);
+                this.entity = GetStrawberryEntityID(area, mode, offset);
             } 
             else if (this.type == CollectableType.GOLDEN) 
             {   
-                this.strawberry = GetGoldenEntityID(area, mode, offset);
+                this.entity = GetGoldenEntityID(area, mode, offset);
+            }
+            else if (type == CollectableType.TRAP) {
+                this.entity = GetTrapEntityID((TrapType)offset);
             }
         }
 
-        public ArchipelagoNetworkItem(CollectableType type, int area, int mode, EntityID? strawberry = null)
+        public ArchipelagoNetworkItem(CollectableType type, int area, int mode, EntityID? entity = null)
         {
             this.type = type;
             this.area = area;
             this.mode = mode;
 
-            if (!strawberry.HasValue)
+            if (!entity.HasValue)
             {
                 offset = 0;
-                this.strawberry = null;
+                this.entity = null;
+            }
+            else if (type == CollectableType.TRAP)
+            {
+                this.entity = null;
             }
             else if (this.type == CollectableType.GOLDEN) 
             {   
-                bool isWinged = GetGoldenEntityID(area, mode, 1).Equals(strawberry);
+                bool isWinged = GetGoldenEntityID(area, mode, 1).Equals(entity);
                 this.offset = isWinged ? 1 : 0;
-                this.strawberry = GetGoldenEntityID(area, mode, offset);
+                this.entity = GetGoldenEntityID(area, mode, offset);
             }
             else 
             {
-                offset = (GetStrawberryOffset(strawberry.Value) ?? 99) % OFFSET_SIDE;
+                offset = (GetStrawberryOffset(entity.Value) ?? 99) % OFFSET_SIDE;
                 if (offset == 99 && area == 10) {
                     // special case for moon berry bc idk where it's stored
                     offset = 0;
                 }
-                this.strawberry = GetStrawberryEntityID(area, mode, offset);
+                this.entity = GetStrawberryEntityID(area, mode, offset);
             }
         }
 
-        public ArchipelagoNetworkItem(CollectableType type, AreaKey area, EntityID? strawberry = null) :
-            this(type, area.ID, (int)area.Mode, strawberry) {}
+        public ArchipelagoNetworkItem(CollectableType type, AreaKey area, EntityID? entity = null) :
+            this(type, area.ID, (int)area.Mode, entity) {}
        
         private static void BuildStrawberryMap()
         {
@@ -202,6 +204,30 @@ namespace Celeste.Mod.CelesteArchipelago
             }
 
             return null;
+
+        }
+        private static EntityID GetTrapEntityID(TrapType offset)
+        {
+            string label;
+            switch (offset) {
+                case TrapType.THEO_CRYSTAL:
+                    label = TrapType.THEO_CRYSTAL.ToString();
+                    break;
+                case TrapType.BADELINE_CHASERS:
+                    label = TrapType.BADELINE_CHASERS.ToString();
+                    break;
+                case TrapType.SEEKER:
+                    label = TrapType.SEEKER.ToString();
+                    break;
+                case TrapType.STAMINA:
+                    label = TrapType.STAMINA.ToString();
+                    break;
+                default: 
+                    throw new ArgumentOutOfRangeException($"Trap ({offset}) has not been implemented");
+            }
+
+            EntityID entityID = new EntityID(label, (int)offset);
+            return entityID;
         }
     }
 }
